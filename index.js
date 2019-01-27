@@ -32,7 +32,7 @@ var serviceRegion = "westus2"; // e.g., "westus"
 // now create the audio-config pointing to our stream and
 // the speech config specifying the language.
 
-app.post("/audio", upload.single('data'), async (req, res) => {
+app.post("/audio", upload.single('data'), (req, res) => {
     var pushStream = sdk.AudioInputStream.createPushStream();
     let file = req.file;
     fs.createReadStream(file.path).on('data', function (arrayBuffer) {
@@ -58,14 +58,14 @@ app.post("/audio", upload.single('data'), async (req, res) => {
     var recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
 
     // start the recognizer and wait for a result.
-    let toSend = await recognizer.recognizeOnceAsync(
-        async function (result) {
-            return clean.parseCommands((JSON.parse(result["privJson"])).DisplayText);
-            // recognizer.close();
-            // recognizer = undefined;
+    recognizer.recognizeOnceAsync(
+        function (result) {
+            let toSend = clean.parseCommands((JSON.parse(result["privJson"])).DisplayText);
+            res.send(toSend);
+            recognizer.close();
+            recognizer = undefined;
         },
     );
-    res.send(toSend);
 });
 
 app.post('/upload', upload.single('song'), (req, res) => {
