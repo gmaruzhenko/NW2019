@@ -42,5 +42,4 @@ if(regexBar4(commandStr)){return 0;}
 else if (regexBar16(commandStr)){return 1;}
 else if (regexStop(commandStr)){return 2;}
 else {return -1;}
-return 0;
 }
