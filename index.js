@@ -53,6 +53,7 @@ app.post("/audio", upload.single('data'), (req, res) => {
     // start the recognizer and wait for a result.
     recognizer.recognizeOnceAsync(
         async function (result) {
+            console.log(result["errorDetails"]);
             let toSend = await clean.parseCommands((JSON.parse(result["privJson"])).DisplayText);
             res.send(toSend);
             recognizer.close();
