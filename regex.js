@@ -16,5 +16,3 @@ exports.parseCommands = function(commandStr) {
         return { type: "fail", message: "No command found." };
     }
 }
-
-
