@@ -5,6 +5,7 @@
 */
 
 exports.parseCommands = function(commandStr) {
+    console.log(commandStr);
     let regexBarNum = /(bar|measure)\s[0-9]+/i;
     let regexStop = /stop/i;
     if (regexBarNum.test(commandStr)) {
@@ -16,5 +17,3 @@ exports.parseCommands = function(commandStr) {
         return { type: "fail", message: "No command found." };
     }
 }
-
-
