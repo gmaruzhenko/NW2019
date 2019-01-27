@@ -3,7 +3,7 @@ const multer = require('multer');
 const cors = require('cors');
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './')
+        cb(null, './uploads')
     }
 });
 const fs = require('fs');
@@ -52,9 +52,8 @@ app.post("/audio", upload.single('data'), (req, res) => {
 
     // start the recognizer and wait for a result.
     recognizer.recognizeOnceAsync(
-        async function (result) {
-            console.log(result["errorDetails"]);
-            let toSend = await clean.parseCommands((JSON.parse(result["privJson"])).DisplayText);
+        function (result) {
+            let toSend = clean.parseCommands((JSON.parse(result["privJson"])).DisplayText);
             res.send(toSend);
             recognizer.close();
             recognizer = undefined;
