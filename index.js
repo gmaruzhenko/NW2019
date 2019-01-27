@@ -28,9 +28,9 @@ var serviceRegion = "westus2"; // e.g., "westus"
 app.post("/audio", upload.single('data'), (req, res) => {
     var pushStream = sdk.AudioInputStream.createPushStream();
     let file = req.file;
-    fs.createReadStream(file.path).on('data', function(arrayBuffer) {  
+    fs.createReadStream(file.path).on('data', function (arrayBuffer) {
         pushStream.write(arrayBuffer.buffer);
-    }).on('end', function() {
+    }).on('end', function () {
         pushStream.close();
         console.log("File done processing");
         fs.unlink(file.path, () => console.log("File removed"));
@@ -65,9 +65,19 @@ app.get('/song', (req, res) => {
     let name = req.query.name;
     fs.readFile(`./music/${name}`, (err, data) => {
         res.header("content-type", "audio/mp3");
-		res.end(data, "binary");
+        res.end(data, "binary");
     });
-})
+});
+
+app.get('/songnames', (req, res) => {
+    fs.readdir('./music', (err, files) => {
+        let fileArray = []
+        files.forEach(file => {
+            fileArray.push(file);
+        });
+        res.send({ files: fileArray });
+    })
+});
 
 app.listen(PORT, () => console.log(`listening on ${PORT}`));
 
