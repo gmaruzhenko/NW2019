@@ -61,6 +61,14 @@ app.post("/audio", upload.single('data'), (req, res) => {
     );
 });
 
+app.get('/song', (req, res) => {
+    let name = req.query.name;
+    fs.readFile(`./music/${name}`, (err, data) => {
+        res.header("content-type", "audio/mp3");
+		res.end(data, "binary");
+    });
+})
+
 app.listen(PORT, () => console.log(`listening on ${PORT}`));
 
 
