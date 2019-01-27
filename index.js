@@ -3,7 +3,14 @@ const multer = require('multer');
 const cors = require('cors');
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './uploads')
+        if (file.fieldname === 'song') {
+            cb(null, './music');
+        } else {
+            cb(null, './uploads');
+        }
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
     }
 });
 const fs = require('fs');
@@ -61,6 +68,16 @@ app.post("/audio", upload.single('data'), (req, res) => {
     );
 });
 
+app.post('/upload', upload.single('song'), (req, res) => {
+    fs.readdir('./music', (err, files) => {
+        let fileArray = []
+        files.forEach(file => {
+            fileArray.push(file);
+        });
+        res.send({ files: fileArray });
+    });
+});
+
 app.get('/song', (req, res) => {
     let name = req.query.name;
     fs.readFile(`./music/${name}`, (err, data) => {
@@ -76,7 +93,7 @@ app.get('/songnames', (req, res) => {
             fileArray.push(file);
         });
         res.send({ files: fileArray });
-    })
+    });
 });
 
 app.listen(PORT, () => console.log(`listening on ${PORT}`));
