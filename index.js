@@ -6,12 +6,11 @@ var storage = multer.diskStorage({
         cb(null, './uploads')
     }
 });
-// var storage = multer.memoryStorage();
 const fs = require('fs');
 var upload = multer({ storage: storage });
 var sdk = require("microsoft-cognitiveservices-speech-sdk");
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 const clean = require('./regex');
 
 app.use(cors());
@@ -34,15 +33,9 @@ app.post("/audio", upload.single('data'), (req, res) => {
     }).on('end', function() {
         pushStream.close();
         console.log("File done processing");
+        fs.unlink(file.path, () => console.log("File removed"));
     });
-    
-    // console.log(file);
-    // let buff = toArrayBuffer(file.buffer);
-    // pushStream.write(file.buffer);
 
-    //Below is what you need to run azure with a stream of type defined above
-
-    // we are done with the setup
     console.log("Now recognizing from the file");
 
     // now create the audio-config pointing to our stream and
