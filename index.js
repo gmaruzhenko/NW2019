@@ -22,6 +22,10 @@ fs.createReadStream(filename).on('data', function(arrayBuffer) {
     pushStream.close();
 });
 
+
+//Below is what you need to run azure with a stream of type defined above
+
+
 // we are done with the setup
 console.log("Now recognizing from: " + filename);
 
