@@ -22,8 +22,6 @@ Search for words: if statements to figure out which command
 Return the appropriate command
 */
 
-
-
 /*
 @ param string containing the text of the voice command
 @ return
@@ -33,13 +31,17 @@ Return the appropriate command
     -1 if the command doesn't match our specified commands
 */
 
-function getCommand(commandStr){
-var regexBar4 = /(bar|measure)\s(4|four)/i;
-var regexBar16 = /(bar|measure)\s(16|sixteen)/i;
-var regexStop = /stop/i;
-
-if(regexBar4(commandStr)){return 0;}
-else if (regexBar16(commandStr)){return 1;}
-else if (regexStop(commandStr)){return 2;}
-else {return -1;}
+exports.parseCommands = function(commandStr) {
+    let regexBar4 = /(bar|measure)\s(4|four)/i;
+    let regexBar16 = /(bar|measure)\s(16|sixteen)/i;
+    let regexStop = /stop/i;
+    if (regexBar4.test(commandStr)) {
+        return { type: "location", bar: 4 };
+    } else if (regexBar16.test(commandStr)) {
+        return { type: "location", bar: 16 }; 
+    } else if (regexStop.test(commandStr)) {
+        return { type: "stop" };
+    } else {
+        return { type: "fail", message: "No command found." };
+    }
 }

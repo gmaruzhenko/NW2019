@@ -1,8 +1,20 @@
-"use strict";
-
-// pull in the required packages.
+const express = require('express');
+const multer = require('multer');
+const cors = require('cors');
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './uploads')
+    }
+});
+// var storage = multer.memoryStorage();
+const fs = require('fs');
+var upload = multer({ storage: storage });
 var sdk = require("microsoft-cognitiveservices-speech-sdk");
-var fs = require("fs");
+const app = express();
+const PORT = 8000;
+const clean = require('./regex');
+
+app.use(cors());
 
 // replace with your own subscription key,
 // service region (e.g., "westus"), and
@@ -10,47 +22,53 @@ var fs = require("fs");
 // through the speech recognizer.
 var subscriptionKey = "cc1118bc46ec486492cc371e523154c1";
 var serviceRegion = "westus2"; // e.g., "westus"
-var filename = "test1.wav"; // 16000 Hz, Mono
-
-// create the push stream we need for the speech sdk.
-var pushStream = sdk.AudioInputStream.createPushStream();
-
-// open the file and push it to the push stream.
-fs.createReadStream(filename).on('data', function(arrayBuffer) {
-    pushStream.write(arrayBuffer.buffer);
-}).on('end', function() {
-    pushStream.close();
-});
-
-
-//Below is what you need to run azure with a stream of type defined above
-
-
-// we are done with the setup
-console.log("Now recognizing from: " + filename);
 
 // now create the audio-config pointing to our stream and
 // the speech config specifying the language.
-var audioConfig = sdk.AudioConfig.fromStreamInput(pushStream);
-var speechConfig = sdk.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
 
-// setting the recognition language to English.
-speechConfig.speechRecognitionLanguage = "en-US";
-
-// create the speech recognizer.
-var recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
-
-// start the recognizer and wait for a result.
-recognizer.recognizeOnceAsync(
-    function (result) {
-        console.log(result);
-
-        recognizer.close();
-        recognizer = undefined;
-    },
-    function (err) {
-        console.trace("err - " + err);
-
-        recognizer.close();
-        recognizer = undefined;
+app.post("/audio", upload.single('data'), (req, res) => {
+    var pushStream = sdk.AudioInputStream.createPushStream();
+    let file = req.file;
+    fs.createReadStream(file.path).on('data', function(arrayBuffer) {  
+        pushStream.write(arrayBuffer.buffer);
+    }).on('end', function() {
+        pushStream.close();
+        console.log("File done processing");
     });
+    
+    // console.log(file);
+    // let buff = toArrayBuffer(file.buffer);
+    // pushStream.write(file.buffer);
+
+    //Below is what you need to run azure with a stream of type defined above
+
+    // we are done with the setup
+    console.log("Now recognizing from the file");
+
+    // now create the audio-config pointing to our stream and
+    // the speech config specifying the language.
+
+    var audioConfig = sdk.AudioConfig.fromStreamInput(pushStream);
+    var speechConfig = sdk.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+
+    // setting the recognition language to English.
+    speechConfig.speechRecognitionLanguage = "en-US";
+
+    // create the speech recognizer.
+    var recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
+
+    // start the recognizer and wait for a result.
+    recognizer.recognizeOnceAsync(
+        function (result) {
+            let toSend = clean.parseCommands((JSON.parse(result["privJson"])).DisplayText);
+            res.send(toSend);
+            recognizer.close();
+            recognizer = undefined;
+        },
+    );
+});
+
+app.listen(PORT, () => console.log(`listening on ${PORT}`));
+
+
+
